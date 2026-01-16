@@ -1,0 +1,252 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>C কম্পাইলার | মোবাইল ফ্রেন্ডলি</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    :root {
+      --primary: #4361ee;
+      --danger: #e63946;
+      --success: #2a9d8f;
+      --dark: #1d3557;
+      --light: #f8f9fa;
+      --card-bg: #ffffff;
+      --shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+      color: var(--dark);
+      min-height: 100vh;
+      padding: 16px;
+      overflow-x: hidden;
+    }
+    .container {
+      max-width: 768px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      padding: 20px 0;
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--primary), #3a0ca3);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin: 20px 0;
+      justify-content: center;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      background: #e9ecef;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: #495057;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    /* Tab Content */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease forwards;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    textarea, pre {
+      width: 100%;
+      min-height: 200px;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      resize: vertical;
+      background: #fdfdfd;
+    }
+    textarea:focus {
+      outline: 2px solid var(--primary);
+      border-color: var(--primary);
+    }
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      border: none;
+    }
+    .error {
+      color: var(--danger);
+      background: #ffebee;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 12px;
+      font-weight: 600;
+      display: none;
+    }
+    .btn-run {
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+    }
+    .btn-run:hover {
+      background: #21968f;
+      transform: scale(1.02);
+    }
+    .btn-run:active {
+      transform: scale(0.98);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #6c757d;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚡ C কম্পাইলার</h1>
+      <p class="subtitle">মোবাইলে সরাসরি C প্রোগ্রাম লিখুন, রান করুন এবং আউটপুট দেখুন!</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="code">কোড লেখক</button>
+      <button class="tab-btn" data-tab="input">scanf ইনপুট</button>
+      <button class="tab-btn" data-tab="output">আউটপুট</button>
+    </div>
+
+    <div id="code-tab" class="tab-content active">
+      <div class="card">
+        <textarea id="code-editor" placeholder="// আপনার C কোড এখানে লিখুন&#10;&#10;#include &lt;stdio.h&gt;&#10;int main() {&#10;    int a, b;&#10;    scanf(&quot;%d %d&quot;, &amp;a, &amp;b);&#10;    printf(&quot;Sum: %d&quot;, a + b);&#10;    return 0;&#10;}">#include <stdio.h>
+int main() {
+    int a, b;
+    scanf("%d %d", &a, &b);
+    printf("Sum: %d", a + b);
+    return 0;
+}</textarea>
+        <div class="error" id="code-error"></div>
+      </div>
+    </div>
+
+    <div id="input-tab" class="tab-content">
+      <div class="card">
+        <textarea id="user-input" placeholder="ইনপুট ভ্যালু এখানে দিন (যেমন: 5 10)"></textarea>
+        <div class="error" id="input-error"></div>
+      </div>
+    </div>
+
+    <div id="output-tab" class="tab-content">
+      <div class="card">
+        <pre id="output-area">আউটপুট এখানে দেখানো হবে...</pre>
+        <div class="error" id="output-error"></div>
+      </div>
+      <button class="btn-run" id="run-btn">▶️ প্রোগ্রাম রান করুন</button>
+    </div>
+
+    <footer>
+      © 2026 | C Compiler Web App | GitHub এ হোস্টেড
+    </footer>
+  </div>
+
+  <script>
+    // Tab Switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabId = btn.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+        btn.classList.add('active');
+      });
+    });
+
+    // Run Button
+    document.getElementById('run-btn').addEventListener('click', async () => {
+      const code = document.getElementById('code-editor').value;
+      const input = document.getElementById('user-input').value;
+
+      // Clear errors
+      document.querySelectorAll('.error').forEach(el => {
+        el.style.display = 'none';
+        el.textContent = '';
+      });
+
+      const res = await fetch('/compile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, input })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById('output-area').textContent = data.output || 'কোনো আউটপুট নেই।';
+        document.getElementById('output-error').style.display = 'none';
+      } else {
+        document.getElementById('output-area').textContent = '';
+        document.getElementById('output-error').textContent = data.error;
+        document.getElementById('output-error').style.display = 'block';
+      }
+
+      // Auto-switch to output tab
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector('.tab-btn[data-tab="output"]').classList.add('active');
+      document.getElementById('output-tab').classList.add('active');
+    });
+  </script>
+</body>
+</html>
