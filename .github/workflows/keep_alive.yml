@@ -2,9 +2,11 @@ name: 24/7 Professional Keep Alive
 
 on:
   schedule:
-    - cron: '*/10 * * * *' # প্রতি ১০ মিনিট পর পর পিং করবে (ঘুম ভাঙাতে)
-    - cron: '0 */4 * * *'  # প্রতি ৪ ঘণ্টা পর পর রিস্টার্ট করবে
-  workflow_dispatch:      # ম্যানুয়ালি চালানোর অপশন
+    # প্রতি ৫ মিনিট পর পর পিং করবে (Render-এর ১৫ মিনিটের স্লিপ টাইম এড়াতে এটি সেরা)
+    - cron: '*/5 * * * *' 
+    # প্রতি ৬ ঘণ্টা পর পর অটো রিস্টার্ট (অতিরিক্ত মেমোরি ক্লিন করার জন্য)
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # ম্যানুয়ালি চেক করার জন্য
 
 jobs:
   keep_alive:
@@ -12,13 +14,25 @@ jobs:
     steps:
       - name: Ping App to Keep Awake
         run: |
-          curl -s -I https://c-compiler-app-dumodz.onrender.com/ | grep "HTTP/1.1 200 OK" || echo "App is awake"
+          # -s (silent), -L (follow redirects), -I (fetch headers)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://c-compiler-app-dumodz.onrender.com/)
+          if [ $STATUS -eq 200 ]; then
+            echo "Success: App is Online (Status 200)"
+          else
+            echo "App might be sleeping, waking it up... (Status: $STATUS)"
+            curl -s https://c-compiler-app-dumodz.onrender.com/ > /dev/null
+          fi
 
   restart_app:
-    if: github.event.schedule == '0 */4 * * *'
+    # শুধুমাত্র নির্দিষ্ট রিস্টার্ট শিডিউলে রান হবে
+    if: github.event.schedule == '0 */6 * * *'
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Render Deploy Hook (Auto Restart)
+      - name: Trigger Render Deploy Hook
         run: |
-          # যদি তুমি নিচের 'Deploy Hook' সেটআপ করো তবেই এটি রিস্টার্ট হবে
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK }}" ]; then
+            curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+            echo "Restart request sent to Render."
+          else
+            echo "Warning: RENDER_DEPLOY_HOOK secret is not set!"
+          fi
