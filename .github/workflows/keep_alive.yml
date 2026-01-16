@@ -1,0 +1,24 @@
+name: 24/7 Professional Keep Alive
+
+on:
+  schedule:
+    - cron: '*/10 * * * *' # প্রতি ১০ মিনিট পর পর পিং করবে (ঘুম ভাঙাতে)
+    - cron: '0 */4 * * *'  # প্রতি ৪ ঘণ্টা পর পর রিস্টার্ট করবে
+  workflow_dispatch:      # ম্যানুয়ালি চালানোর অপশন
+
+jobs:
+  keep_alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping App to Keep Awake
+        run: |
+          curl -s -I https://c-compiler-app-dumodz.onrender.com/ | grep "HTTP/1.1 200 OK" || echo "App is awake"
+
+  restart_app:
+    if: github.event.schedule == '0 */4 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy Hook (Auto Restart)
+        run: |
+          # যদি তুমি নিচের 'Deploy Hook' সেটআপ করো তবেই এটি রিস্টার্ট হবে
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
