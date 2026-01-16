@@ -13,6 +13,7 @@
             --bg: #0b0e14;
             --card-bg: rgba(255, 255, 255, 0.05);
             --error: #ff4d4d;
+            --success: #00ff88;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,15 +24,16 @@
             display: flex;
             justify-content: center;
             overflow-x: hidden;
+            min-height: 100vh;
         }
 
-        /* Container for 768px optimization */
         .app-container {
             width: 100%;
             max-width: 768px;
             min-height: 100vh;
             padding: 20px;
             background: radial-gradient(circle at top right, #1a1a2e, #0b0e14);
+            position: relative;
         }
 
         header {
@@ -47,7 +49,7 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* Tab System */
+        /* Tabs */
         .tabs {
             display: flex;
             background: var(--card-bg);
@@ -93,9 +95,14 @@
             min-height: 400px;
             animation: slideUp 0.6s ease;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
         }
 
-        .pane { display: none; animation: fadeIn 0.5s ease; }
+        .pane { 
+            display: none; 
+            animation: fadeIn 0.5s ease; 
+            height: 100%;
+        }
         .pane.active { display: block; }
 
         textarea {
@@ -103,25 +110,65 @@
             height: 350px;
             background: transparent;
             border: none;
-            color: #00ff88;
+            color: var(--success);
             font-family: 'Fira Code', monospace;
             font-size: 15px;
             outline: none;
             resize: none;
+            overflow-wrap: break-word;
+            word-break: break-all;
+            white-space: pre-wrap;
         }
 
         .output-box {
             color: #ddd;
             font-family: 'Fira Code', monospace;
             white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.2);
         }
 
-        .error-text { color: var(--error); font-weight: bold; }
+        .error-text { 
+            color: var(--error); 
+            font-weight: bold; 
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
 
         /* Floating Run Button */
         .run-btn {
             position: fixed;
-            bottom: 30px;
+            bottom: 90px;
             right: 30px;
             width: 70px;
             height: 70px;
@@ -135,15 +182,60 @@
             transform: scale(1);
             transition: 0.3s;
             z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
         }
 
         .run-btn:active { transform: scale(0.9); }
+
+        /* Mobile Bottom Nav */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            max-width: 768px;
+            background: rgba(15, 18, 25, 0.95);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            z-index: 99;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #aaa;
+            font-size: 10px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active, .nav-item:hover {
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
 
         /* Animations */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes fadeInDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+        /* Responsive */
+        @media (max-width: 768px) {
+            .run-btn {
+                bottom: 80px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -173,12 +265,20 @@ int main() {
     printf("Square of %d is %d", n, n*n);
     return 0;
 }</textarea>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="clearAll()">Clear All</button>
+                <button class="action-btn" onclick="downloadCode()">Download .c</button>
+                <button class="action-btn" onclick="copyCode()">Copy Code</button>
+            </div>
         </div>
 
         <!-- Tab 2: Scanf Input -->
         <div class="pane" id="pane-1">
             <h3 style="margin-bottom: 10px; color: var(--primary);">Input Values:</h3>
-            <textarea id="scanf-input" style="height: 150px; border: 1px solid #333; padding: 10px; border-radius: 10px;" placeholder="Enter inputs for scanf here (one per line)..."></textarea>
+            <textarea id="scanf-input" placeholder="Enter inputs for scanf here (one per line)..."></textarea>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="clearInput()">Clear Input</button>
+            </div>
         </div>
 
         <!-- Tab 3: Output -->
@@ -187,7 +287,27 @@ int main() {
         </div>
     </div>
 
-    <button class="run-btn" onclick="executeCode()">RUN</button>
+    <button class="run-btn" onclick="executeCode()">▶</button>
+
+    <!-- Mobile Bottom Nav -->
+    <div class="mobile-nav">
+        <div class="nav-item" onclick="switchTab(0)">
+            <div class="nav-icon">⌨️</div>
+            <div>Code</div>
+        </div>
+        <div class="nav-item" onclick="switchTab(1)">
+            <div class="nav-icon">📥</div>
+            <div>Input</div>
+        </div>
+        <div class="nav-item" onclick="switchTab(2)">
+            <div class="nav-icon">📤</div>
+            <div>Output</div>
+        </div>
+        <div class="nav-item" onclick="executeCode()">
+            <div class="nav-icon">⚡</div>
+            <div>Run</div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -199,13 +319,64 @@ int main() {
         
         const move = index * 100;
         $('#indicator').css('transform', `translateX(${move}%)`);
+
+        // Update mobile nav active state
+        $('.nav-item').removeClass('active');
+        $('.nav-item').eq(index).addClass('active');
+    }
+
+    function clearAll() {
+        if (confirm("Are you sure you want to clear all code and input?")) {
+            $('#code-editor').val('');
+            $('#scanf-input').val('');
+            $('#output-screen').text('Output will appear here...');
+        }
+    }
+
+    function clearInput() {
+        $('#scanf-input').val('');
+    }
+
+    function downloadCode() {
+        const code = $('#code-editor').val();
+        if (!code.trim()) {
+            alert("No code to download!");
+            return;
+        }
+        const blob = new Blob([code], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'program.c';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function copyCode() {
+        const code = $('#code-editor').val();
+        if (!code.trim()) {
+            alert("No code to copy!");
+            return;
+        }
+        navigator.clipboard.writeText(code).then(() => {
+            alert("Code copied to clipboard!");
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            alert("Failed to copy code.");
+        });
     }
 
     function executeCode() {
-        const code = $('#code-editor').val();
+        const code = $('#code-editor').val().trim();
+        if (!code) {
+            $('#output-screen').html('<span class="error-text">Error: Please write some C code before running!</span>');
+            switchTab(2);
+            return;
+        }
+
         const input = $('#scanf-input').val();
-        
-        // Output ট্যাব অটো সিলেক্ট এবং লোডিং দেখানো
         switchTab(2);
         $('#output-screen').html('<span style="color: var(--primary)">Compiling & Running...</span>');
 
@@ -213,18 +384,24 @@ int main() {
             url: '/run',
             method: 'POST',
             data: { code: code, input: input },
+            timeout: 10000,
             success: function(response) {
                 if(response.status === 'error') {
-                    $('#output-screen').html(`<span class="error-text">${response.output}</span>`);
+                    $('#output-screen').html(`<span class="error-text">Compilation/Runtime Error:\n\n${response.output}</span>`);
                 } else {
-                    $('#output-screen').html(`<span style="color: #00ff88;">Execution Successful:</span>\n\n${response.output}`);
+                    $('#output-screen').html(`<span style="color: var(--success);">Execution Successful:</span>\n\n${response.output}`);
                 }
             },
-            error: function() {
-                $('#output-screen').html('<span class="error-text">Server Error! Please try again.</span>');
+            error: function(xhr, status, error) {
+                let msg = "Server Error! Please try again.";
+                if (status === "timeout") msg = "Request timed out. Server may be busy.";
+                $('#output-screen').html(`<span class="error-text">${msg}</span>`);
             }
         });
     }
+
+    // Initialize mobile nav
+    $('.nav-item').eq(0).addClass('active');
 </script>
 
 </body>
